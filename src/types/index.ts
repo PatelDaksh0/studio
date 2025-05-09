@@ -4,3 +4,9 @@ export interface NewsSummaryItem extends SummarizeArticleOutput {
   id: string;
   originalUrl: string;
 }
+
+export interface CnnHeadline {
+  title: string;
+  link: string;
+  pubDate?: string;
+}

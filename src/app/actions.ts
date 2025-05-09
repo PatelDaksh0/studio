@@ -3,6 +3,8 @@
 
 import { z } from 'zod';
 import { summarizeArticle, type SummarizeArticleOutput } from '@/ai/flows/summarize-article';
+import { fetchRssFeed } from '@/services/news-fetcher';
+import type { CnnHeadline } from '@/types';
 
 const UrlSchema = z.string().url({ message: "Please enter a valid URL." });
 
@@ -43,4 +45,22 @@ export async function submitUrlForSummarization(
       error: errorMessage 
     };
   }
+}
+
+const CNN_TOP_STORIES_URL = 'http://rss.cnn.com/rss/cnn_topstories.rss';
+   
+export interface FetchCnnHeadlinesResult {
+    headlines?: CnnHeadline[];
+    error?: string;
+}
+
+export async function fetchCnnTopStoriesAction(): Promise<FetchCnnHeadlinesResult> {
+    try {
+        const headlines = await fetchRssFeed(CNN_TOP_STORIES_URL);
+        return { headlines };
+    } catch (error) {
+        console.error('Error in fetchCnnTopStoriesAction:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch CNN top stories.';
+        return { error: errorMessage };
+    }
 }
