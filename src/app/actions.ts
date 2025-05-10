@@ -47,20 +47,59 @@ export async function submitUrlForSummarization(
   }
 }
 
-const CNN_LATEST_STORIES_URL = 'http://rss.cnn.com/rss/cnn_latest.rss';
+const CNN_WORLD_NEWS_RSS_URL = 'http://rss.cnn.com/rss/cnn_world.rss';
    
 export interface FetchCnnHeadlinesResult {
     headlines?: CnnHeadline[];
     error?: string;
 }
 
-export async function fetchCnnLatestStoriesAction(): Promise<FetchCnnHeadlinesResult> {
+// Helper function to check if a date string corresponds to yesterday or the day before yesterday
+const isFromRelevantDays = (pubDateString?: string): boolean => {
+  if (!pubDateString) return false;
+  try {
+    const pubDate = new Date(pubDateString);
+    
+    // Get start of today in server's local timezone
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const yesterday = new Date(startOfToday);
+    yesterday.setDate(startOfToday.getDate() - 1); // Start of yesterday
+
+    const dayBeforeYesterday = new Date(startOfToday);
+    dayBeforeYesterday.setDate(startOfToday.getDate() - 2); // Start of day before yesterday
+
+    // Normalize pubDate to its start of day in server's local timezone
+    const startOfPubDateDay = new Date(pubDate.getFullYear(), pubDate.getMonth(), pubDate.getDate());
+
+    return startOfPubDateDay.getTime() === yesterday.getTime() || 
+           startOfPubDateDay.getTime() === dayBeforeYesterday.getTime();
+  } catch (e) {
+    console.warn("Could not parse pubDate for filtering:", pubDateString, e);
+    return false; // If date is unparseable, don't include it
+  }
+};
+
+
+export async function fetchCnnWorldNewsAction(): Promise<FetchCnnHeadlinesResult> {
     try {
-        const headlines = await fetchRssFeed(CNN_LATEST_STORIES_URL);
+        let headlines = await fetchRssFeed(CNN_WORLD_NEWS_RSS_URL);
+        
+        // Filter for yesterday and day before yesterday
+        headlines = headlines.filter(headline => isFromRelevantDays(headline.pubDate));
+
+        // Sort by pubDate descending (most recent of the two days first)
+        headlines.sort((a, b) => {
+            const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
+            const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
+            return dateB - dateA;
+        });
+
         return { headlines };
     } catch (error) {
-        console.error('Error in fetchCnnLatestStoriesAction:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch CNN latest stories.';
+        console.error('Error in fetchCnnWorldNewsAction:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch CNN world news.';
         return { error: errorMessage };
     }
 }

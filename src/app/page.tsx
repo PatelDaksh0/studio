@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { BookMarked, Newspaper, Loader2 as PageLoader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { fetchCnnLatestStoriesAction, submitUrlForSummarization } from '@/app/actions';
+import { fetchCnnWorldNewsAction, submitUrlForSummarization } from '@/app/actions';
 
 export default function NewsBriefPage() {
   const [summaries, setSummaries] = useState<NewsSummaryItem[]>([]);
@@ -47,16 +47,16 @@ export default function NewsBriefPage() {
   const loadCnnHeadlines = useCallback(async () => {
     setIsLoadingCnnHeadlines(true);
     setCnnHeadlines(null);
-    const result = await fetchCnnLatestStoriesAction();
+    const result = await fetchCnnWorldNewsAction(); // Updated action
     if (result.headlines) {
       setCnnHeadlines(result.headlines);
       if (result.headlines.length > 0) {
-        toast({ title: "Latest CNN Stories Loaded", description: `${result.headlines.length} stories fetched.` });
+        toast({ title: "CNN World News Loaded", description: `${result.headlines.length} stories fetched from yesterday/day before.` });
       } else {
-        toast({ title: "Latest CNN Stories", description: "No stories found in the feed." });
+        toast({ title: "CNN World News", description: "No stories found from yesterday/day before in the feed." });
       }
     } else if (result.error) {
-      toast({ variant: "destructive", title: "Error Loading Latest CNN Stories", description: result.error });
+      toast({ variant: "destructive", title: "Error Loading CNN World News", description: result.error });
     }
     setIsLoadingCnnHeadlines(false);
   }, [toast]);
@@ -113,7 +113,7 @@ export default function NewsBriefPage() {
                 ) : (
                   <Newspaper className="mr-2 h-5 w-5" />
                 )}
-                {cnnHeadlines ? "Refresh Latest CNN Stories" : "Load Latest CNN Stories"}
+                {cnnHeadlines ? "Refresh CNN World News (Past 2 Days)" : "Load CNN World News (Past 2 Days)"}
               </Button>
             </div>
           </div>
@@ -122,14 +122,14 @@ export default function NewsBriefPage() {
         {isLoadingCnnHeadlines && (
            <div className="text-center py-10">
              <PageLoader className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
-             <p className="text-lg text-muted-foreground">Fetching latest CNN stories...</p>
+             <p className="text-lg text-muted-foreground">Fetching CNN world news...</p>
            </div>
         )}
 
         {cnnHeadlines && cnnHeadlines.length > 0 && !isLoadingCnnHeadlines && (
              <section aria-labelledby="cnn-headlines-heading" className="mb-16">
                <h2 id="cnn-headlines-heading" className="text-2xl font-semibold text-primary mb-6 text-center md:text-left">
-                 Latest from CNN
+                 CNN World News (Yesterday & Day Before)
                </h2>
                <ScrollArea className="h-[400px] w-full rounded-md border p-4 bg-card shadow">
                  <ul className="space-y-3">
@@ -149,7 +149,7 @@ export default function NewsBriefPage() {
                          className="p-0 h-auto text-accent hover:underline"
                        >
                          Summarize this article
-                         {isProcessingDirect && <PageLoader className="ml-2 h-4 w-4 animate-spin" />}
+                         {isProcessingDirect && headline.link === (summaries[0]?.originalUrl) && <PageLoader className="ml-2 h-4 w-4 animate-spin" />}
                        </Button>
                      </li>
                    ))}
@@ -158,6 +158,16 @@ export default function NewsBriefPage() {
              </section>
            )}
         
+         {cnnHeadlines && cnnHeadlines.length === 0 && !isLoadingCnnHeadlines && (
+            <div className="text-center py-10">
+                <Newspaper className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold text-primary mb-2">No Recent World News Found</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                    Could not find any CNN world news articles from yesterday or the day before in the current feed. Try again later or submit a specific URL.
+                </p>
+            </div>
+        )}
+
         {isAnyProcessing && summaries.length === 0 && !isLoadingCnnHeadlines && (
            <div className="text-center py-10">
              <PageLoader className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
@@ -173,11 +183,11 @@ export default function NewsBriefPage() {
               width={400} 
               height={300} 
               className="rounded-lg mb-8 shadow-lg"
-              data-ai-hint="news articles"
+              data-ai-hint="world news"
             />
             <h3 className="text-2xl font-semibold text-primary mb-4">Ready for your first brief?</h3>
             <p className="text-lg text-muted-foreground max-w-md">
-              Paste a news article URL above, or load latest stories from CNN to get started.
+              Paste a news article URL above, or load world news from CNN (past 2 days) to get started.
             </p>
           </div>
         )}
