@@ -10,7 +10,7 @@ import Image from 'next/image';
 import { BookMarked, Newspaper, Loader2 as PageLoader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { fetchCnnTopStoriesAction, submitUrlForSummarization } from '@/app/actions';
+import { fetchCnnLatestStoriesAction, submitUrlForSummarization } from '@/app/actions';
 
 export default function NewsBriefPage() {
   const [summaries, setSummaries] = useState<NewsSummaryItem[]>([]);
@@ -47,16 +47,16 @@ export default function NewsBriefPage() {
   const loadCnnHeadlines = useCallback(async () => {
     setIsLoadingCnnHeadlines(true);
     setCnnHeadlines(null);
-    const result = await fetchCnnTopStoriesAction();
+    const result = await fetchCnnLatestStoriesAction();
     if (result.headlines) {
       setCnnHeadlines(result.headlines);
       if (result.headlines.length > 0) {
-        toast({ title: "CNN Headlines Loaded", description: `${result.headlines.length} stories fetched.` });
+        toast({ title: "Latest CNN Stories Loaded", description: `${result.headlines.length} stories fetched.` });
       } else {
-        toast({ title: "CNN Headlines", description: "No stories found in the feed." });
+        toast({ title: "Latest CNN Stories", description: "No stories found in the feed." });
       }
     } else if (result.error) {
-      toast({ variant: "destructive", title: "Error Loading CNN Headlines", description: result.error });
+      toast({ variant: "destructive", title: "Error Loading Latest CNN Stories", description: result.error });
     }
     setIsLoadingCnnHeadlines(false);
   }, [toast]);
@@ -113,7 +113,7 @@ export default function NewsBriefPage() {
                 ) : (
                   <Newspaper className="mr-2 h-5 w-5" />
                 )}
-                {cnnHeadlines ? "Refresh CNN Top Stories" : "Load CNN Top Stories"}
+                {cnnHeadlines ? "Refresh Latest CNN Stories" : "Load Latest CNN Stories"}
               </Button>
             </div>
           </div>
@@ -122,7 +122,7 @@ export default function NewsBriefPage() {
         {isLoadingCnnHeadlines && (
            <div className="text-center py-10">
              <PageLoader className="mx-auto h-8 w-8 animate-spin text-primary mb-4" />
-             <p className="text-lg text-muted-foreground">Fetching CNN headlines...</p>
+             <p className="text-lg text-muted-foreground">Fetching latest CNN stories...</p>
            </div>
         )}
 
@@ -177,7 +177,7 @@ export default function NewsBriefPage() {
             />
             <h3 className="text-2xl font-semibold text-primary mb-4">Ready for your first brief?</h3>
             <p className="text-lg text-muted-foreground max-w-md">
-              Paste a news article URL above, or load top stories from CNN to get started.
+              Paste a news article URL above, or load latest stories from CNN to get started.
             </p>
           </div>
         )}
@@ -204,3 +204,4 @@ export default function NewsBriefPage() {
     </div>
   );
 }
+

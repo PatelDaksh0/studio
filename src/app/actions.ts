@@ -16,7 +16,7 @@ export interface SummarizationResult {
 }
 
 export async function submitUrlForSummarization(
-  url: string
+  url:string
 ): Promise<SummarizationResult> {
   try {
     UrlSchema.parse(url);
@@ -47,20 +47,20 @@ export async function submitUrlForSummarization(
   }
 }
 
-const CNN_TOP_STORIES_URL = 'http://rss.cnn.com/rss/cnn_topstories.rss';
+const CNN_LATEST_STORIES_URL = 'http://rss.cnn.com/rss/cnn_latest.rss';
    
 export interface FetchCnnHeadlinesResult {
     headlines?: CnnHeadline[];
     error?: string;
 }
 
-export async function fetchCnnTopStoriesAction(): Promise<FetchCnnHeadlinesResult> {
+export async function fetchCnnLatestStoriesAction(): Promise<FetchCnnHeadlinesResult> {
     try {
-        const headlines = await fetchRssFeed(CNN_TOP_STORIES_URL);
+        const headlines = await fetchRssFeed(CNN_LATEST_STORIES_URL);
         return { headlines };
     } catch (error) {
-        console.error('Error in fetchCnnTopStoriesAction:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch CNN top stories.';
+        console.error('Error in fetchCnnLatestStoriesAction:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch CNN latest stories.';
         return { error: errorMessage };
     }
 }
