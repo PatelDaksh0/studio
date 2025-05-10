@@ -11,6 +11,7 @@ import { BookMarked, Newspaper, Loader2 as PageLoader } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { fetchCnnWorldNewsAction, submitUrlForSummarization } from '@/app/actions';
+import Link from 'next/link';
 
 export default function NewsBriefPage() {
   const [summaries, setSummaries] = useState<NewsSummaryItem[]>([]);
@@ -47,13 +48,13 @@ export default function NewsBriefPage() {
   const loadCnnHeadlines = useCallback(async () => {
     setIsLoadingCnnHeadlines(true);
     setCnnHeadlines(null);
-    const result = await fetchCnnWorldNewsAction(); // Updated action
+    const result = await fetchCnnWorldNewsAction();
     if (result.headlines) {
       setCnnHeadlines(result.headlines);
       if (result.headlines.length > 0) {
-        toast({ title: "CNN World News Loaded", description: `${result.headlines.length} stories fetched from yesterday/day before.` });
+        toast({ title: "CNN World News Loaded", description: `${result.headlines.length} stories fetched from the past week.` });
       } else {
-        toast({ title: "CNN World News", description: "No stories found from yesterday/day before in the feed." });
+        toast({ title: "CNN World News", description: "No stories found from the past week in the feed." });
       }
     } else if (result.error) {
       toast({ variant: "destructive", title: "Error Loading CNN World News", description: result.error });
@@ -113,7 +114,7 @@ export default function NewsBriefPage() {
                 ) : (
                   <Newspaper className="mr-2 h-5 w-5" />
                 )}
-                {cnnHeadlines ? "Refresh CNN World News (Past 2 Days)" : "Load CNN World News (Past 2 Days)"}
+                {cnnHeadlines ? "Refresh CNN World News (Past Week)" : "Load CNN World News (Past Week)"}
               </Button>
             </div>
           </div>
@@ -129,7 +130,7 @@ export default function NewsBriefPage() {
         {cnnHeadlines && cnnHeadlines.length > 0 && !isLoadingCnnHeadlines && (
              <section aria-labelledby="cnn-headlines-heading" className="mb-16">
                <h2 id="cnn-headlines-heading" className="text-2xl font-semibold text-primary mb-6 text-center md:text-left">
-                 CNN World News (Yesterday & Day Before)
+                 CNN World News (Past Week)
                </h2>
                <ScrollArea className="h-[400px] w-full rounded-md border p-4 bg-card shadow">
                  <ul className="space-y-3">
@@ -163,7 +164,7 @@ export default function NewsBriefPage() {
                 <Newspaper className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold text-primary mb-2">No Recent World News Found</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">
-                    Could not find any CNN world news articles from yesterday or the day before in the current feed. Try again later or submit a specific URL.
+                    Could not find any CNN world news articles from the past week in the current feed. Try again later or submit a specific URL.
                 </p>
             </div>
         )}
@@ -187,7 +188,7 @@ export default function NewsBriefPage() {
             />
             <h3 className="text-2xl font-semibold text-primary mb-4">Ready for your first brief?</h3>
             <p className="text-lg text-muted-foreground max-w-md">
-              Paste a news article URL above, or load world news from CNN (past 2 days) to get started.
+              Paste a news article URL above, or load world news from CNN (past week) to get started.
             </p>
           </div>
         )}
@@ -209,7 +210,9 @@ export default function NewsBriefPage() {
 
       <footer className="py-6 text-center text-muted-foreground text-sm border-t border-border/50 bg-card/50">
         <p>&copy; {new Date().getFullYear()} NewsBrief. All rights reserved.</p>
-        <p>Powered by Genkit AI</p>
+        <p>
+          Made by:- <Link href="https://www.instagram.com/pateldaksh0/profilecard/" target="_blank" rel="noopener noreferrer" className="text-accent hover:underline">Daksh Patel</Link>
+        </p>
       </footer>
     </div>
   );

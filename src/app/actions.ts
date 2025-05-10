@@ -54,27 +54,23 @@ export interface FetchCnnHeadlinesResult {
     error?: string;
 }
 
-// Helper function to check if a date string corresponds to yesterday or the day before yesterday
+// Helper function to check if a date string is within the last 7 days (including today)
 const isFromRelevantDays = (pubDateString?: string): boolean => {
   if (!pubDateString) return false;
   try {
     const pubDate = new Date(pubDateString);
     
-    // Get start of today in server's local timezone
-    const today = new Date();
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    // Get current date and time
+    const now = new Date();
 
-    const yesterday = new Date(startOfToday);
-    yesterday.setDate(startOfToday.getDate() - 1); // Start of yesterday
+    // Calculate the date 7 days ago from now
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    // Set to the beginning of that day for comparison
+    const startOfSevenDaysAgo = new Date(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth(), sevenDaysAgo.getDate(), 0, 0, 0, 0);
 
-    const dayBeforeYesterday = new Date(startOfToday);
-    dayBeforeYesterday.setDate(startOfToday.getDate() - 2); // Start of day before yesterday
-
-    // Normalize pubDate to its start of day in server's local timezone
-    const startOfPubDateDay = new Date(pubDate.getFullYear(), pubDate.getMonth(), pubDate.getDate());
-
-    return startOfPubDateDay.getTime() === yesterday.getTime() || 
-           startOfPubDateDay.getTime() === dayBeforeYesterday.getTime();
+    // pubDate must be on or after the start of sevenDaysAgo and not in the future
+    return pubDate.getTime() >= startOfSevenDaysAgo.getTime() && pubDate.getTime() <= now.getTime();
   } catch (e) {
     console.warn("Could not parse pubDate for filtering:", pubDateString, e);
     return false; // If date is unparseable, don't include it
@@ -86,10 +82,10 @@ export async function fetchCnnWorldNewsAction(): Promise<FetchCnnHeadlinesResult
     try {
         let headlines = await fetchRssFeed(CNN_WORLD_NEWS_RSS_URL);
         
-        // Filter for yesterday and day before yesterday
+        // Filter for the last 7 days
         headlines = headlines.filter(headline => isFromRelevantDays(headline.pubDate));
 
-        // Sort by pubDate descending (most recent of the two days first)
+        // Sort by pubDate descending (most recent first)
         headlines.sort((a, b) => {
             const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
             const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
@@ -103,3 +99,4 @@ export async function fetchCnnWorldNewsAction(): Promise<FetchCnnHeadlinesResult
         return { error: errorMessage };
     }
 }
+
